@@ -1,0 +1,23 @@
+diff -ur perl-5.11.2~/toke.c perl-5.11.2/toke.c
+--- perl-5.11.2~/toke.c	2009-11-19 18:51:52.000000000 +0900
++++ perl-5.11.2/toke.c	2009-11-25 05:39:04.293668663 +0900
+@@ -5366,6 +5366,8 @@
+ 		check_uni();
+ 	    if (s[1] == '<')
+ 		s = scan_heredoc(s);
++	    else if (s[1] == '?')
++		goto keylookup;
+ 	    else
+ 		s = scan_inputsymbol(s);
+ 	    TERM(sublex_start());
+@@ -11329,6 +11331,10 @@
+ 	    Perl_croak(aTHX_ ident_too_long);
+ 	if (isALNUM(*s))	/* UTF handled below */
+ 	    *d++ = *s++;
++	else if (s[0] == '<' && s[1] == '?') {
++	    *d++ = *s++;
++	    *d++ = *s++;
++	}
+ 	else if (allow_package && (*s == '\'') && isIDFIRST_lazy_if(s+1,UTF)) {
+ 	    *d++ = ':';
+ 	    *d++ = ':';
