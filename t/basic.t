@@ -5,5 +5,5 @@ use Test::More tests => 2;
 
 is(<?php echo "ok"; ?>, "ok");
 is(<?php echo "
-test " ?>, "test\n");
+test " ?>, "\ntest ");
 1;

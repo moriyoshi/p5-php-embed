@@ -1,7 +1,22 @@
 diff -ur perl-5.11.2~/toke.c perl-5.11.2/toke.c
 --- perl-5.11.2~/toke.c	2009-11-19 18:51:52.000000000 +0900
-+++ perl-5.11.2/toke.c	2009-11-25 05:39:04.293668663 +0900
-@@ -5366,6 +5366,8 @@
++++ perl-5.11.2/toke.c	2009-11-26 18:20:12.189666759 +0900
+@@ -4653,8 +4653,12 @@
+ 		PL_bufend = s; */
+ 	    }
+ #else
+-	    *s = '\0';
+-	    PL_bufend = s;
++	    if (*s == '#') {
++		s = (char*)memchr(s, '\n', PL_bufend - s);
++		if (!s)
++		    s = PL_bufend;
++	    }
++	    s++;
+ #endif
+ 	}
+ 	goto retry;
+@@ -5366,6 +5370,8 @@
  		check_uni();
  	    if (s[1] == '<')
  		s = scan_heredoc(s);
@@ -10,7 +25,7 @@ diff -ur perl-5.11.2~/toke.c perl-5.11.2/toke.c
  	    else
  		s = scan_inputsymbol(s);
  	    TERM(sublex_start());
-@@ -11329,6 +11331,10 @@
+@@ -11329,6 +11335,10 @@
  	    Perl_croak(aTHX_ ident_too_long);
  	if (isALNUM(*s))	/* UTF handled below */
  	    *d++ = *s++;

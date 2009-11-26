@@ -80,11 +80,19 @@ static int yyfill_cb(size_t n, php_scanner_ctx_t *sc)
 {
 	const char *old_bufptr = PL_parser->bufptr;
 	const char *old_bufend = PL_parser->bufend;
-	ptrdiff_t off = (char*)sc->yy_marker - old_bufptr;
-	if (!lex_next_chunk(sc->yy_marker >= sc->yy_limit ? 0: LEX_KEEP_PREVIOUS))
+	ptrdiff_t off = (char*)sc->yy_cursor - old_bufptr;
+	size_t l;
+	if (sc->yy_limit - sc->yy_cursor >= n)
 		return -1;
-	php_scanner_relocate_buffer(PL_parser->bufptr + off, PL_parser->bufend - PL_parser->bufptr, sc);
-	if (sc->yy_limit - sc->yy_cursor < n)
+	if (!lex_next_chunk(LEX_KEEP_PREVIOUS))
+		return -1;
+	l = PL_parser->bufend - PL_parser->bufptr;
+	if (l - off < n) {
+		ptrdiff_t zo = PL_parser->bufend - PL_parser->bufptr;
+		SvGROW(PL_parser->linestr, off + n + 1);
+		Zero(SvPVX(PL_parser->linestr) + l + 1, 0, char);
+	}
+	php_scanner_relocate_buffer(PL_parser->bufptr + off, PL_parser->bufend - PL_parser->bufptr - off, sc); if (sc->yy_limit - sc->yy_cursor < n)
 		sc->yy_limit = sc->yy_cursor + n; /* XXX */
 	return -1;
 }

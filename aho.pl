@@ -1,7 +1,9 @@
 use PHP::Embed;
 
-$a = <?php print "あほ
+sin(0);
+$a = <?php print "
+あ
+ほ
 か";
 ?>;
 print $a, "\n";
-
