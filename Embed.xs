@@ -12,68 +12,68 @@ static int (*next_keyword_plugin)(pTHX_ char *, STRLEN, OP **);
 
 static SV* eval_php_script(const char *script, size_t script_len)
 {
-    int stdin_fds[2] = { -1, -1 };
-    int stdout_fds[2] = { -1, -1 };
-    pid_t pid;
-    SV *retval = NULL;
+	int stdin_fds[2] = { -1, -1 };
+	int stdout_fds[2] = { -1, -1 };
+	pid_t pid;
+	SV *retval = NULL;
 
-    if (pipe(stdin_fds))
-        goto out;
-    if (pipe(stdout_fds))
-        goto out;
+	if (pipe(stdin_fds))
+		goto out;
+	if (pipe(stdout_fds))
+		goto out;
 
-    pid = fork();
-    if (pid < 0)
-        goto out;
+	pid = fork();
+	if (pid < 0)
+		goto out;
 
-    if (pid) {
+	if (pid) {
 		int err;
-        const char *p = script, *e = script + script_len;
+		const char *p = script, *e = script + script_len;
 		close(stdin_fds[0]);
 		close(stdout_fds[1]);
-        while (p < e) {
-            ssize_t nbytes_written = write(stdin_fds[1], p, e - p);
-            if (nbytes_written < 0)
-                goto out;
-            p += nbytes_written;
-        }
-        close(stdin_fds[1]);
-        retval = newSVpvn("", 0);
-        for (;;) {
-            char buf[4096];
-            ssize_t nbytes_read = read(stdout_fds[0], buf, sizeof(buf));
-            if (nbytes_read < 0) {
-                SvREFCNT_dec(retval);
-                retval = NULL;
-                goto out;
-            } else if (nbytes_read == 0) {
-                break;
-            }
-            sv_catpvn(retval, buf, nbytes_read);
-        }
-        waitpid(pid, &err, 0);
+		while (p < e) {
+			ssize_t nbytes_written = write(stdin_fds[1], p, e - p);
+			if (nbytes_written < 0)
+				goto out;
+			p += nbytes_written;
+		}
+		close(stdin_fds[1]);
+		retval = newSVpvn("", 0);
+		for (;;) {
+			char buf[4096];
+			ssize_t nbytes_read = read(stdout_fds[0], buf, sizeof(buf));
+			if (nbytes_read < 0) {
+				SvREFCNT_dec(retval);
+				retval = NULL;
+				goto out;
+			} else if (nbytes_read == 0) {
+				break;
+			}
+			sv_catpvn(retval, buf, nbytes_read);
+		}
+		waitpid(pid, &err, 0);
 		if (WEXITSTATUS(err)) {
 			croak("Subprocess returned error status (%d)", WEXITSTATUS(err));
 		}
-    } else {
-        static char * const args[] = { "php", NULL };
+	} else {
+		static char * const args[] = { "php", NULL };
 		close(stdin_fds[1]);
 		close(stdout_fds[0]);
-        dup2(stdin_fds[0], 0);
-        dup2(stdout_fds[1], 1);
-        if (execvp(args[0], args) < 0)
+		dup2(stdin_fds[0], 0);
+		dup2(stdout_fds[1], 1);
+		if (execvp(args[0], args) < 0)
 			exit(255);
-    }
+	}
 out:
-    if (stdin_fds[0] >= 0)
-        close(stdin_fds[0]);
-    if (stdin_fds[1] >= 0)
-        close(stdin_fds[1]);
-    if (stdout_fds[0] >= 0)
-        close(stdout_fds[0]);
-    if (stdout_fds[1] >= 0)
-        close(stdout_fds[1]);
-    return retval;
+	if (stdin_fds[0] >= 0)
+		close(stdin_fds[0]);
+	if (stdin_fds[1] >= 0)
+		close(stdin_fds[1]);
+	if (stdout_fds[0] >= 0)
+		close(stdout_fds[0]);
+	if (stdout_fds[1] >= 0)
+		close(stdout_fds[1]);
+	return retval;
 }
 
 static int yyfill_cb(size_t n, php_scanner_ctx_t *sc)
@@ -92,7 +92,8 @@ static int yyfill_cb(size_t n, php_scanner_ctx_t *sc)
 		SvGROW(PL_parser->linestr, off + n + 1);
 		Zero(SvPVX(PL_parser->linestr) + l + 1, 0, char);
 	}
-	php_scanner_relocate_buffer(PL_parser->bufptr + off, PL_parser->bufend - PL_parser->bufptr - off, sc); if (sc->yy_limit - sc->yy_cursor < n)
+	php_scanner_relocate_buffer(PL_parser->bufptr + off, PL_parser->bufend - PL_parser->bufptr - off, sc);
+	if (sc->yy_limit - sc->yy_cursor < n)
 		sc->yy_limit = sc->yy_cursor + n; /* XXX */
 	return -1;
 }
