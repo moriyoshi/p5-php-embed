@@ -88,13 +88,32 @@ static int yyfill_cb(size_t n, php_scanner_ctx_t *sc)
 		return -1;
 	l = PL_parser->bufend - PL_parser->bufptr;
 	if (l - off < n) {
-		ptrdiff_t zo = PL_parser->bufend - PL_parser->bufptr;
+		char *buf = SvPVX(PL_parser->linestr);
+		ptrdiff_t bufptr_off = PL_parser->bufptr - buf;
+		ptrdiff_t bufend_off = PL_parser->bufend - buf;
+		ptrdiff_t oldbufptr_off = PL_parser->oldbufptr - buf;
+		ptrdiff_t oldoldbufptr_off = PL_parser->oldoldbufptr - buf;
+		ptrdiff_t linestart_off = PL_parser->linestart - buf;
+		ptrdiff_t last_uni_off = PL_parser->last_uni ?
+					PL_parser->last_uni - buf: 0;
+		ptrdiff_t last_lop_off = PL_parser->last_lop ?
+					PL_parser->last_lop - buf: 0;
 		SvGROW(PL_parser->linestr, off + n + 1);
-		Zero(SvPVX(PL_parser->linestr) + l, off + n + 1 - l, char);
+		buf = SvPVX(PL_parser->linestr);
+		PL_parser->bufptr = buf + bufptr_off;
+		PL_parser->bufend = buf + bufend_off;
+		PL_parser->oldbufptr = buf + oldbufptr_off;
+		PL_parser->oldoldbufptr = buf + oldoldbufptr_off;
+		PL_parser->linestart = buf + linestart_off;
+		PL_parser->last_uni = PL_parser->last_uni ?
+					PL_parser->last_uni + last_uni_off:
+					0;
+		PL_parser->last_lop = PL_parser->last_lop ?
+					PL_parser->last_lop + last_lop_off:
+					0;
+		Zero(PL_parser->bufptr + l, off + n + 1 - l, char);
 	}
 	php_scanner_relocate_buffer(PL_parser->bufptr + off, PL_parser->bufend - PL_parser->bufptr - off, sc);
-	if (sc->yy_limit - sc->yy_cursor < n)
-		sc->yy_limit = sc->yy_cursor + n; /* XXX */
 	return -1;
 }
 
