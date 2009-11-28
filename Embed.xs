@@ -90,7 +90,7 @@ static int yyfill_cb(size_t n, php_scanner_ctx_t *sc)
 	if (l - off < n) {
 		ptrdiff_t zo = PL_parser->bufend - PL_parser->bufptr;
 		SvGROW(PL_parser->linestr, off + n + 1);
-		Zero(SvPVX(PL_parser->linestr) + l + 1, 0, char);
+		Zero(SvPVX(PL_parser->linestr) + l, off + n + 1 - l, char);
 	}
 	php_scanner_relocate_buffer(PL_parser->bufptr + off, PL_parser->bufend - PL_parser->bufptr - off, sc);
 	if (sc->yy_limit - sc->yy_cursor < n)
