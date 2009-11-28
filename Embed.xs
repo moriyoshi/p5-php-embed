@@ -131,7 +131,7 @@ static OP *THX_parse_php(pTHX)
 			croak("Unexpected EOF");
 		}
 		if (lv)
-			sv_2mortal(lv);
+			SvREFCNT_dec(lv);
 		if (tok == T_CLOSE_TAG)
 			break;
 	}
